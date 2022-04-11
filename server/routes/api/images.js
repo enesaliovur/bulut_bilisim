@@ -4,7 +4,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 module.exports = (app) => {
   
     // Add new client
-  app.post('/api/clients', (req, res, next) => {
+  app.post('/image/add', (req, res, next) => {
     if (isDev) {
       AWS.config.update(config.aws_local_config);
     } else {
@@ -41,7 +41,7 @@ module.exports = (app) => {
   });
 
     // Get all clients
-  app.get('/api/clients', (req, res, next) => {
+  app.get('/image/get', (req, res, next) => {
     if (isDev) {
       AWS.config.update(config.aws_local_config);
     } else {
@@ -104,7 +104,7 @@ module.exports = (app) => {
   });
 
   // delete by id
-  app.delete('/api/client', ( req, res, next) => {
+  app.delete('/image/delete', ( req, res, next) => {
     if (isDev) {
       AWS.config.update(config.aws_local_config);
     } else {
@@ -138,7 +138,7 @@ module.exports = (app) => {
   });
 
   // Update by id
-  app.patch('/api/client', ( req, res, next) => {
+  app.patch('/image/update', ( req, res, next) => {
     if (isDev) {
       AWS.config.update(config.aws_local_config);
     } else {
