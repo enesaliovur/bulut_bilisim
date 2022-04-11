@@ -1,0 +1,36 @@
+{
+    "TableName":"Image",
+    "KeySchema":[
+        {
+            "AttributeName":"id",
+            "KeyType":"HASH"
+        }
+    ],
+    "AttributeDefinitions":[
+        {
+            "AttributeName":"title",
+            "AttributeType":"S"
+        },
+       
+        {
+            "AttributeName":"key",
+            "AttributeType":"S"
+        }, 
+        {
+            "AttributeName":"imageUrl",
+            "AttributeType":"S"
+        },
+        {
+            "AttributeName":"password",
+            "AttributeType":"S"
+        },
+        {
+            "AttributeName":"adminPassword",
+            "AttributeType":"S"
+        },
+        {
+            "AttributeName":"fileKey",
+            "AttributeType":"S"
+        }
+    ]
+}
