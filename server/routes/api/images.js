@@ -10,16 +10,18 @@ module.exports = (app) => {
     } else {
       AWS.config.update(config.aws_remote_config);
     }
-    const { clientName, username } = req.body;
+    const { title, base64_url, password, admin_password } = req.paramsbody;
     // Generate random string ID
-    const clientId = (Math.random() * 1000).toString();
+    const imageId = (Math.random() * 1000).toString();
     const docClient = new AWS.DynamoDB.DocumentClient();
     const params = {
       TableName: config.aws_table_name,
       Item: {
-        clientId: clientId,
-        clientName: clientName,
-        username: username
+        imageId: imageId,
+        title: title,
+        base64_url: base64_url,
+        password: password ? password : '',
+        admin_password: admin_password
       }
     };
     docClient.put(params, function(err, data) {
@@ -34,7 +36,7 @@ module.exports = (app) => {
         res.send({
           success: true,
           message: 'Add client',
-          clientId: clientId
+          imageId: imageId
         });
       }
     });
@@ -75,14 +77,14 @@ module.exports = (app) => {
     } else {
       AWS.config.update(config.aws_remote_config);
     }
-    const clientId = req.query.id;
+    const imageId = req.query.id;
     const docClient = new AWS.DynamoDB.DocumentClient();
 
     const params = {
       TableName: config.aws_table_name,
-      KeyConditionExpression: 'clientId = :i',
+      KeyConditionExpression: 'imageId = :i',
       ExpressionAttributeValues: {
-        ':i': clientId
+        ':i': imageId
       }
     };
     docClient.query(params, function(err, data) {
@@ -110,13 +112,13 @@ module.exports = (app) => {
     } else {
       AWS.config.update(config.aws_remote_config);
     }
-    const clientId = req.query.id;
+    const imageId = req.query.id;
     const docClient = new AWS.DynamoDB.DocumentClient();
 
     const params = {
       TableName: config.aws_table_name,
       Key:{
-        clientId: clientId
+        imageId: imageId
       }
     };
     console.log('deleting item');
@@ -144,23 +146,23 @@ module.exports = (app) => {
     } else {
       AWS.config.update(config.aws_remote_config);
     }
-    const { clientName, username } = req.body;
-    const clientId = req.query.id;
+    const { title, admin_password } = req.body;
+    const imageId = req.query.id;
     const docClient = new AWS.DynamoDB.DocumentClient();
 
     const params = {
       TableName: config.aws_table_name,
       Key:{
-        clientId: clientId
+        imageId: imageId
       },
-      UpdateExpression: "set clientName = :n, username = :u",
+      UpdateExpression: "set title = :n, admin_password = :u",
       ExpressionAttributeValues: {
-        ':n': clientName,
-        ':u': username
+        ':n': title,
+        ':u': admin_password
       },
       ReturnValues: "UPDATED_NEW"
     };
-    console.log({clientName, username})
+    console.log({title, admin_password})
     console.log('updating item');
     docClient.update(params, function(err, data) {
       if (err) {
