@@ -1,116 +1,55 @@
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const port = 3001;
+const bodyParser = require('body-parser');
+const dynamoService = require('./dynamo-service');
 const AWS = require('aws-sdk');
+const { s3Config } = require('./aws-config');
+const s3Service = require('./s3-service');
 
-const s3 = new AWS.S3({
-    accessKeyId: "AKIAZ3C6IPOVUR2FRLGN",
-    secretAccessKey: "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",
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.get('/', (req, res) => {
+    const response = {
+        status: true
+    };
+    res.send(response);
 });
 
-const BUCKET_NAME = 'image-crud-bucket'
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+});
 
-const createBucket = (bucketName) => {
-    // Create the parameters for calling createBucket
-    var bucketParams = {
-        Bucket : bucketName,
-    };
-  
-    // call S3 to create the bucket
-    s3.createBucket(bucketParams, function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } else {
-            console.log("Success", data.Location);
+app.post('/create-image', async (req, res) => {
+    const { key, password, adminPassword, title, base64Img } = req.body;
+
+    if (base64Img && key) {
+        try {
+            const uploadedImgUrl = await s3Service.uploadFile(base64Img, key);
+            const result = await dynamoService.createImage({
+                key,
+                password,
+                adminPassword,
+                title,
+                imgUrl: uploadedImgUrl
+            });
+            console.log(result);
+
+            res.send({ status: true });
+            return;
+
+        } catch (e) {
+            res.send({ status: false, message: 'Resim oluşturulamadı.' });
+            return;
         }
-    });
-}
+    }
+    res.send({ status: false, message: 'İşlem başarısız.' });
+    return;
+});
 
-const listBuckets = (s3) => {
-    s3.listBuckets(function(err, data) {
-        if (err) {
-          console.log("Error", err);
-        } else {
-          console.log("Success", data.Buckets);
-        }
-    });
-}
-
-const uploadFile = (filePath,bucketName,keyName) => {
-    var fs = require('fs');
-    // Read the file
-    const file = fs.readFileSync(filePath);
-
-    // Setting up S3 upload parameters
-    const uploadParams = {
-        Bucket: bucketName, // Bucket into which you want to upload file
-        Key: keyName, // Name by which you want to save it
-        Body: file // Local file 
-    };
-
-    s3.upload(uploadParams, function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } 
-        if (data) {
-            console.log("Upload Success", data.Location);
-        }
-    });
-};
-
-const listObjectsInBucket = (bucketName) => {
-    // Create the parameters for calling listObjects
-    var bucketParams = {
-        Bucket : bucketName,
-    };
-  
-    // Call S3 to obtain a list of the objects in the bucket
-    s3.listObjects(bucketParams, function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } else {
-            console.log("Success", data);
-        }
-    });
-}
-
-const deleteBucket = (bucketName) => {
-    // Create params for S3.deleteBucket
-    var bucketParams = {
-        Bucket : bucketName
-    };
-  
-    // Call S3 to delete the bucket
-    s3.deleteBucket(bucketParams, function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } else {
-            console.log("Success", data);
-        }
-    });
-}
-
-function sleep(ms) {
-    console.log('Wait...')
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function main(){
-    console.log('\nCreating bucket : ')
-    createBucket(BUCKET_NAME)
-    await sleep(5000)
-    
-    console.log('\nListing out all the buckets in your AWS S3: ')
-    listBuckets(s3)
-    await sleep(5000)
-    
-    console.log('\nUploading image1 to '+ BUCKET_NAME)
-    uploadFile('Download-Calm-Image.png',BUCKET_NAME,"calm.jpg")
-    await sleep(5000)
-    
-    console.log('\nUploading image2 to '+ BUCKET_NAME)
-    uploadFile('paul-bulai-yghdOKePgxM-unsplash.jpg',BUCKET_NAME,"paul.jpg")
-    await sleep(5000)
-    
-    console.log('\nListing out all the files/objects in the bucket '+ BUCKET_NAME)
-    listObjectsInBucket(BUCKET_NAME)
-    await sleep(5000)
-}
-main()
+app.post('/create-image', async (req, res) => {
+    res.send({ status: false, message: 'Parola uyuşmuyor' });
+});
