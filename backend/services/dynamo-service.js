@@ -1,5 +1,5 @@
 const AWS = require("aws-sdk");
-const { dynamoConfig } = require('./aws-config');
+const { dynamoConfig } = require('../aws-config');
 const uuid = require('uuid');
 
 const docClient = new AWS.DynamoDB.DocumentClient(dynamoConfig);
@@ -17,7 +17,7 @@ const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
     },
   };
 
-  
+
   const writeProcess = new Promise((resolve, reject) => {
     docClient.put(params, function (err, data) {
       if (err) {
@@ -34,42 +34,42 @@ const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
 
 const deletImage = () => {
 
-const id = req.query.id
-console.log(id)
-const params = {
-  TableName: imagesTable,
-  Key: {
-    id:id
-  }
-
-};
-const deleteProcess = new Promise((resolve, reject) => {
-  docClient.delete(params, function (err, data) {
-    if (err) {
-      reject(undefined);
-    } else {
-      resolve({ status: true });
+  const id = req.query.id
+  console.log(id)
+  const params = {
+    TableName: imagesTable,
+    Key: {
+      id: id
     }
+
+  };
+  const deleteProcess = new Promise((resolve, reject) => {
+    docClient.delete(params, function (err, data) {
+      if (err) {
+        reject(undefined);
+      } else {
+        resolve({ status: true });
+      }
+    });
   });
-});
-return deleteProcess;
+  return deleteProcess;
 }
 
 const getImage = ({ password, key }) => {
-  const imgObject = {  password, key };
+  const imgObject = { password, key };
   // const id = req.query.id
   // key = req.body.key;
 
   const params = {
     TableName: imagesTable,
     Item: {
-      id:id,
+      id: id,
       ...imgObject
     },
     // Key: {
     //   id:id
     // }
-  
+
   };
   const readProcess = new Promise((resolve, reject) => {
     docClient.query(params, function (err, data) {
@@ -81,18 +81,15 @@ const getImage = ({ password, key }) => {
     });
   });
   return readProcess;
-   
+
 }
 
 const getAllPosts = async () => {
-
-  
 
   const params = {
     TableName: imagesTable
   };
 
-  
   const readProcess = new Promise((resolve, reject) => {
     docClient.scan(params, function (err, data) {
       if (err) {
@@ -103,13 +100,10 @@ const getAllPosts = async () => {
     });
   });
   return readProcess;
-
-
-
 };
 
-const updatePost = async ( password, adminPassword, title, key) => {
-  const imgObject = {    password, adminPassword,title, key };
+const updatePost = async (password, adminPassword, title, key) => {
+  const imgObject = { password, adminPassword, title, key };
   //imgObject =req.body
   // const id = req.query.id
 
@@ -122,7 +116,7 @@ const updatePost = async ( password, adminPassword, title, key) => {
     // Key: {
     //   id: id
     // }
-    
+
   };
   const updateProcess = new Promise((resolve, reject) => {
     docClient.update(params, function (err, data) {
@@ -134,7 +128,7 @@ const updatePost = async ( password, adminPassword, title, key) => {
     });
   });
   return updateProcess;
-  
+
 };
 
 module.exports = {
@@ -142,5 +136,5 @@ module.exports = {
   deletImage,
   getImage,
   getAllPosts,
-  updatePost
+  updatePost,
 };

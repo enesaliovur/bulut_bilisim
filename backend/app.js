@@ -3,10 +3,8 @@ const app = express();
 const cors = require('cors');
 const port = 3001;
 const bodyParser = require('body-parser');
-const dynamoService = require('./dynamo-service');
-const AWS = require('aws-sdk');
-const { s3Config } = require('./aws-config');
-const s3Service = require('./s3-service');
+const dynamoService = require('./services/dynamo-service');
+const s3Service = require('./services/s3-service');
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -55,7 +53,7 @@ app.patch('/update-image/:id', async (req, res) => {
 
     if (key && password) {
         try {
-            
+
             const result = await dynamoService.updatePost({
                 key,
                 password,
@@ -78,11 +76,11 @@ app.patch('/update-image/:id', async (req, res) => {
 app.get('/get-image/:id', async (req, res) => {
 
     const { key, password } = req.body;
-    
-    
+
+
     if (password && key) {
         try {
-           
+
             const result = await dynamoService.getImage({
                 key,
                 password
@@ -99,7 +97,6 @@ app.get('/get-image/:id', async (req, res) => {
     }
     res.send({ status: false, message: 'İşlem başarısız.' });
     return;
-    // res.send({ status: false, message: 'Parola uyuşmuyor' });
 });
 
 app.get('/getImages', async (req, res) => {
@@ -107,9 +104,9 @@ app.get('/getImages', async (req, res) => {
 
     if (tableName) {
         try {
-           
+
             const result = await dynamoService.getImages({
-               tableName
+                tableName
             });
             console.log(result);
 
@@ -128,14 +125,14 @@ app.get('/getImages', async (req, res) => {
 
 app.delete('/deleteImage/:id', async (req, res) => {
 
-    const  id  = req.body.id;
-    
-    
+    const id = req.body.id;
+
+
     if (id) {
         try {
-           
+
             const result = await dynamoService.delete({
-                
+
                 id
             });
             console.log(result);
@@ -150,5 +147,4 @@ app.delete('/deleteImage/:id', async (req, res) => {
     }
     res.send({ status: false, message: 'İşlem başarısız.' });
     return;
-    // res.send({ status: false, message: 'Parola uyuşmuyor' });
 });
