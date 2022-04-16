@@ -55,28 +55,42 @@ const deletImage = () => {
   return deleteProcess;
 }
 
-const getImage = ({ password, key }) => {
-  const imgObject = { password, key };
-  // const id = req.query.id
-  // key = req.body.key;
+const getImage = ({ password, id }) => {
 
-  const params = {
-    TableName: imagesTable,
-    Item: {
-      id: id,
-      ...imgObject
-    },
-    // Key: {
-    //   id:id
-    // }
-
-  };
   const readProcess = new Promise((resolve, reject) => {
-    docClient.query(params, function (err, data) {
+    docClient.scan({
+      TableName: imagesTable,
+      FilterExpression: "id = :i and password = :p",
+      ExpressionAttributeValues: {
+        ":i": id,
+        ":p": password,
+      }
+    }, function (err, data) {
       if (err) {
+        console.log(err);
         reject(undefined);
       } else {
-        resolve({ status: true });
+        console.log(data);
+        resolve(data.Items?.[0]);
+      }
+    });
+  });
+  return readProcess;
+}
+
+const getImages = () => {
+  const params = {
+    TableName: imagesTable,
+  };
+
+  const readProcess = new Promise((resolve, reject) => {
+    docClient.scan(params, function (err, data) {
+      if (err) {
+        console.log(err);
+        reject(undefined);
+      } else {
+        console.log(data.Items);
+        resolve(data.Items);
       }
     });
   });
@@ -102,21 +116,15 @@ const getAllPosts = async () => {
   return readProcess;
 };
 
-const updatePost = async (password, adminPassword, title, key) => {
+const updatePost = async ({ id, password, adminPassword, title, key }) => {
   const imgObject = { password, adminPassword, title, key };
-  //imgObject =req.body
-  // const id = req.query.id
 
   const params = {
     TableName: imagesTable,
     Item: {
-      id: req.query.id,
+      id: id,
       ...imgObject
     },
-    // Key: {
-    //   id: id
-    // }
-
   };
   const updateProcess = new Promise((resolve, reject) => {
     docClient.update(params, function (err, data) {
@@ -137,4 +145,5 @@ module.exports = {
   getImage,
   getAllPosts,
   updatePost,
+  getImages,
 };

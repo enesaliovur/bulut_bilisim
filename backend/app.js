@@ -35,8 +35,7 @@ app.post('/create-image', async (req, res) => {
                 imgUrl: uploadedImgUrl
             });
             console.log(result);
-
-            res.send({ status: true });
+            res.send(result);
             return;
 
         } catch (e) {
@@ -44,16 +43,15 @@ app.post('/create-image', async (req, res) => {
             return;
         }
     }
-    res.send({ status: false, message: 'İşlem başarısız.' });
+    res.status(400).send({ status: false, message: 'İşlem başarısız.' });
     return;
 });
 app.patch('/update-image/:id', async (req, res) => {
     const { key, password, adminPassword, title } = req.body;
-    // const id = req.query.id;
+    const id = req.query.id;
 
     if (key && password) {
         try {
-
             const result = await dynamoService.updatePost({
                 key,
                 password,
@@ -66,85 +64,64 @@ app.patch('/update-image/:id', async (req, res) => {
             return;
 
         } catch (e) {
-            res.send({ status: false, message: 'Resim degismedi.' });
+            res.status(400).send({ status: false, message: 'Resim degismedi.' });
             return;
         }
     }
-    res.send({ status: false, message: 'İşlem başarısız.' });
+    res.status(400).send({ status: false, message: 'İşlem başarısız.' });
     return;
 });
-app.get('/get-image/:id', async (req, res) => {
 
-    const { key, password } = req.body;
+app.get('/get-image', async (req, res) => {
+    const { id, password } = req.body;
 
-
-    if (password && key) {
+    if (password && id) {
         try {
-
             const result = await dynamoService.getImage({
-                key,
+                id,
                 password
             });
-            console.log(result);
-
-            res.send({ status: true });
+            res.send(result);
             return;
 
         } catch (e) {
-            res.send({ status: false, message: 'Resim gelmedi.' });
+            res.status(400).send({ status: false, message: 'Resim gelmedi.' });
             return;
         }
     }
-    res.send({ status: false, message: 'İşlem başarısız.' });
+    res.status(400).send({ status: false, message: 'İşlem başarısız.' });
     return;
 });
 
-app.get('/getImages', async (req, res) => {
-    const tableName = req.body;
+app.get('/get-images', async (req, res) => {
+    try {
+        const result = await dynamoService.getImages();
+        console.log(result);
 
-    if (tableName) {
-        try {
+        res.send({ status: true });
+        return;
 
-            const result = await dynamoService.getImages({
-                tableName
-            });
-            console.log(result);
-
-            res.send({ status: true });
-            return;
-
-        } catch (e) {
-            res.send({ status: false, message: 'Resim gelmedi.' });
-            return;
-        }
+    } catch (e) {
+        res.status(400).send({ status: false, message: 'Resim gelmedi.' });
+        return;
     }
-    res.send({ status: false, message: 'İşlem başarısız.' });
-    return;
 })
 
 
 app.delete('/delete-image/:id', async (req, res) => {
-
     const id = req.body.id;
-
-
     if (id) {
         try {
-
-            const result = await dynamoService.delete({
-
-                id
-            });
+            const result = await dynamoService.delete({ id });
             console.log(result);
 
             res.send({ status: true });
             return;
-
         } catch (e) {
-            res.send({ status: false, message: 'Resim silindi.' });
+            res.status(400).send({ status: false, message: 'Resim silindi.' });
             return;
         }
     }
-    res.send({ status: false, message: 'İşlem başarısız.' });
+    res.status(400).send({ status: false, message: 'İşlem başarısız.' });
     return;
 });
