@@ -3,11 +3,8 @@ import { AppBar, Button, Link, Toolbar } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 import UploadImageForm from '../components/UploadImageForm';
-import useQuery from '../hooks/useQuery';
 
 export default function UploadImagePage() {
-  const query = useQuery();
-  
   return (
     <>
       <AppBar position="static">

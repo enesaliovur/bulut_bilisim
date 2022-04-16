@@ -18,7 +18,7 @@ function App(): JSX.Element {
 
         <CssBaseline />
         <Switch>
-          <Route path="/">
+          <Route exact path="/">
             <ShowImagePage />
           </Route>
           <Route path="/upload">
