@@ -123,7 +123,7 @@ app.get('/getImages', async (req, res) => {
 })
 
 
-app.delete('/deleteImage/:id', async (req, res) => {
+app.delete('/delete-image/:id', async (req, res) => {
 
     const id = req.body.id;
 
