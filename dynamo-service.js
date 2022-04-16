@@ -17,6 +17,7 @@ const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
     },
   };
 
+  
   const writeProcess = new Promise((resolve, reject) => {
     docClient.put(params, function (err, data) {
       if (err) {
@@ -29,26 +30,117 @@ const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
   return writeProcess;
 }
 
-const editImage = () => {
 
-}
 
 const deletImage = () => {
 
+const id = req.query.id
+console.log(id)
+const params = {
+  TableName: imagesTable,
+  Key: {
+    id:id
+  }
+
+};
+const deleteProcess = new Promise((resolve, reject) => {
+  docClient.delete(params, function (err, data) {
+    if (err) {
+      reject(undefined);
+    } else {
+      resolve({ status: true });
+    }
+  });
+});
+return deleteProcess;
 }
 
 const getImage = ({ password, key }) => {
-  // const result = docClient.get()
-  // if (result.password) {
-  //   password === result.password {
+  const imgObject = {  password, key };
+  // const id = req.query.id
+  // key = req.body.key;
 
-  //   } else {
-  //     return { status: false, message: 'Parola uyuşmuyor.'}
-  //   }
-  //  }
+  const params = {
+    TableName: imagesTable,
+    Item: {
+      id:id,
+      ...imgObject
+    },
+    // Key: {
+    //   id:id
+    // }
+  
+  };
+  const readProcess = new Promise((resolve, reject) => {
+    docClient.query(params, function (err, data) {
+      if (err) {
+        reject(undefined);
+      } else {
+        resolve({ status: true });
+      }
+    });
+  });
+  return readProcess;
+   
 }
+
+const getAllPosts = async () => {
+
+  
+
+  const params = {
+    TableName: imagesTable
+  };
+
+  
+  const readProcess = new Promise((resolve, reject) => {
+    docClient.scan(params, function (err, data) {
+      if (err) {
+        reject(undefined);
+      } else {
+        resolve({ status: true });
+      }
+    });
+  });
+  return readProcess;
+
+
+
+};
+
+const updatePost = async ( password, adminPassword, title, key) => {
+  const imgObject = {    password, adminPassword,title, key };
+  //imgObject =req.body
+  // const id = req.query.id
+
+  const params = {
+    TableName: imagesTable,
+    Item: {
+      id: req.query.id,
+      ...imgObject
+    },
+    // Key: {
+    //   id: id
+    // }
+    
+  };
+  const updateProcess = new Promise((resolve, reject) => {
+    docClient.update(params, function (err, data) {
+      if (err) {
+        reject(undefined);
+      } else {
+        resolve({ status: true });
+      }
+    });
+  });
+  return updateProcess;
+  
+};
+
 module.exports = {
   createImage,
-  editImage,
-  deletImage
+  deletImage,
+  getImage,
+  getAllPosts,
+  updatePost
 };
