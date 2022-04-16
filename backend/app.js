@@ -5,6 +5,7 @@ const port = 3001;
 const bodyParser = require('body-parser');
 const dynamoService = require('./services/dynamo-service');
 const s3Service = require('./services/s3-service');
+const uuid = require('uuid');
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -22,13 +23,14 @@ app.listen(port, () => {
 });
 
 app.post('/create-image', async (req, res) => {
-    const { key, password, adminPassword, title, base64Img } = req.body;
+    const { password, adminPassword, title, base64Img } = req.body;
 
-    if (base64Img && key) {
+    if (base64Img) {
         try {
-            const uploadedImgUrl = await s3Service.uploadFile(base64Img, key);
+            const id = uuid.v4();
+            const uploadedImgUrl = await s3Service.uploadFile(base64Img, id);
             const result = await dynamoService.createImage({
-                key,
+                id,
                 password,
                 adminPassword,
                 title,
@@ -39,6 +41,7 @@ app.post('/create-image', async (req, res) => {
             return;
 
         } catch (e) {
+            console.log(e);
             res.send({ status: false, message: 'Resim oluşturulamadı.' });
             return;
         }
@@ -47,20 +50,18 @@ app.post('/create-image', async (req, res) => {
     return;
 });
 
-app.patch('/update-image/:id', async (req, res) => {
-    const { key, password, adminPassword, title } = req.body;
-    const id = req.query.id;
+app.put('/update-image', async (req, res) => {
+    const { password, adminPassword, title, id, base64Img } = req.body;
 
-    if (key && password) {
+    if (password) {
         try {
-            const result = await dynamoService.updatePost({
-                key,
+             await dynamoService.updatePost({
+                id,
                 password,
                 adminPassword,
                 title
             });
-            console.log(result);
-
+            await s3Service.uploadFile(base64Img, id);
             res.send({ status: true });
             return;
 
@@ -107,16 +108,19 @@ app.get('/get-images', async (req, res) => {
 })
 
 
-app.delete('/delete-image/:id', async (req, res) => {
+app.delete('/delete-image', async (req, res) => {
     const id = req.body.id;
     if (id) {
         try {
-            const result = await dynamoService.delete({ id });
+            //S3'ten sil
+            const result = await dynamoService.deleteImage({ id });
+
             console.log(result);
 
             res.send({ status: true });
             return;
         } catch (e) {
+            console.log(e);
             res.status(400).send({ status: false, message: 'Resim silindi.' });
             return;
         }

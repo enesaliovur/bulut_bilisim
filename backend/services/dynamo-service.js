@@ -6,24 +6,23 @@ const docClient = new AWS.DynamoDB.DocumentClient(dynamoConfig);
 
 const imagesTable = 'images';
 
-const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
-  const imgObject = { key, title, imgUrl, password, adminPassword };
+const createImage = ({ id, title, imgUrl, password, adminPassword }) => {
+  const imgObject = { id, title, imgUrl, password, adminPassword };
 
   const params = {
     TableName: imagesTable,
-    Item: {
-      id: uuid.v4(),
-      ...imgObject,
-    },
+    Item: imgObject,
   };
 
+  console.log('item:', params.Item);
 
   const writeProcess = new Promise((resolve, reject) => {
     docClient.put(params, function (err, data) {
       if (err) {
+        console.log(err);
         reject(undefined);
       } else {
-        resolve({ status: true });
+        resolve(params.Item);
       }
     });
   });
@@ -32,17 +31,14 @@ const createImage = ({ key, title, imgUrl, password, adminPassword }) => {
 
 
 
-const deletImage = () => {
-
-  const id = req.query.id
-  console.log(id)
+const deleteImage = ({ id }) => {
   const params = {
     TableName: imagesTable,
     Key: {
       id: id
     }
-
   };
+
   const deleteProcess = new Promise((resolve, reject) => {
     docClient.delete(params, function (err, data) {
       if (err) {
@@ -56,7 +52,6 @@ const deletImage = () => {
 }
 
 const getImage = ({ password, id }) => {
-
   const readProcess = new Promise((resolve, reject) => {
     docClient.scan({
       TableName: imagesTable,
@@ -89,12 +84,12 @@ const getImages = () => {
         console.log(err);
         reject(undefined);
       } else {
+        console.log(data);
         resolve(data.Items);
       }
     });
   });
   return readProcess;
-
 }
 
 const getAllPosts = async () => {
@@ -115,11 +110,14 @@ const getAllPosts = async () => {
   return readProcess;
 };
 
-const updatePost = async ({ id, password, adminPassword, title, key }) => {
-  const imgObject = { password, adminPassword, title, key };
+const updatePost = async ({ id, password, adminPassword, title }) => {
+  const imgObject = { password, adminPassword, title };
 
   const params = {
     TableName: imagesTable,
+    Key: {
+      id: id,
+    },
     Item: {
       id: id,
       ...imgObject
@@ -128,6 +126,7 @@ const updatePost = async ({ id, password, adminPassword, title, key }) => {
   const updateProcess = new Promise((resolve, reject) => {
     docClient.update(params, function (err, data) {
       if (err) {
+        console.log(err);
         reject(undefined);
       } else {
         resolve({ status: true });
@@ -140,7 +139,7 @@ const updatePost = async ({ id, password, adminPassword, title, key }) => {
 
 module.exports = {
   createImage,
-  deletImage,
+  deleteImage,
   getImage,
   getAllPosts,
   updatePost,
