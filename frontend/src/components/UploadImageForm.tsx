@@ -5,11 +5,17 @@ import {
   Stack, TextField,
   Typography
 } from '@mui/material';
+import { AxiosError } from 'axios';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import * as Yup from 'yup';
+import { ImageModel } from '../@types/image-model';
 import { UploadImageRequestDTO } from '../@types/upload-image-dto';
+import { API_CLIENT } from '../api/api-client';
+import { Endpoints } from '../api/endpoints';
+import { getBase64 } from '../utils';
+import ImageCreatedDialog from './ImageCreatedDialog';
 import UploadAvatar from './UploadImage';
 
 
@@ -20,16 +26,14 @@ type UserNewFormProps = {
 
 export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewFormProps) {
 
-  const notify = () => toast("Wow so easy !");
+  const [file, setFile] = useState<Blob | undefined>(undefined);
+  const [createdDialogInfo, setCreatedDialogInfo] = useState<{ isOpen: boolean, image?: ImageModel }>({ isOpen: false, image: undefined });
 
   const UploadImageSchema = Yup.object().shape({
     title: Yup.string().required('Title is required'),
-    avatarUrl: Yup.mixed().required('Image is required')
+    imageUrl: Yup.mixed().required('Image is required')
   });
 
-  useEffect(() => {
-    notify();
-  }, [])
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -40,19 +44,25 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
     },
     validationSchema: UploadImageSchema,
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
-      console.log('okundu!');
-      // enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
-      try {
-        // await fakeRequest(500);
+      const base64Img = await getBase64(file!);
+      API_CLIENT.post(Endpoints.CREATE_IMAGE, {
+        base64Img: base64Img,
+        title: values.title,
+        password: values.password,
+        adminPassword: values.adminPassword,
+      }).then(res => {
         resetForm();
-        setSubmitting(false);
-        // enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
-        // navigate(PATH_DASHBOARD.user.list);
-      } catch (error) {
-        console.error(error);
-        setSubmitting(false);
-        // setErrors(error);
-      }
+        setCreatedDialogInfo({ isOpen: true, image: res.data });
+      })
+        .catch((err: AxiosError) => {
+          const _error = `Hata! ${err.response?.data?.message ?? 'Beklenmeyen bir hata meydana geldi.'}`;
+          toast.error(_error, {
+            position: 'bottom-left'
+          });
+        })
+        .finally(() => {
+          setSubmitting(false);
+        });
     }
   });
 
@@ -63,6 +73,7 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
     (acceptedFiles: any) => {
       const file = acceptedFiles[0];
       if (file) {
+        setFile(file);
         setFieldValue('imageUrl', {
           ...file,
           preview: URL.createObjectURL(file)
@@ -142,13 +153,18 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
                 </Stack>
                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                   <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-                    {!isEdit ? 'Create User' : 'Save Changes'}
+                    Gönder
                   </LoadingButton>
                 </Box>
               </Stack>
             </Card>
           </Grid>
         </Grid>
+        <ImageCreatedDialog
+          handleClose={(() => setCreatedDialogInfo({ ...createdDialogInfo, isOpen: false }))}
+          image={createdDialogInfo.image}
+          isOpen={createdDialogInfo.isOpen}
+        />
         <ToastContainer />
       </Form>
     </FormikProvider>
