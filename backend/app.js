@@ -46,6 +46,7 @@ app.post('/create-image', async (req, res) => {
     res.status(400).send({ status: false, message: 'İşlem başarısız.' });
     return;
 });
+
 app.patch('/update-image/:id', async (req, res) => {
     const { key, password, adminPassword, title } = req.body;
     const id = req.query.id;
@@ -72,7 +73,7 @@ app.patch('/update-image/:id', async (req, res) => {
     return;
 });
 
-app.get('/get-image', async (req, res) => {
+app.post('/get-image', async (req, res) => {
     const { id, password } = req.body;
 
     if (password && id) {
