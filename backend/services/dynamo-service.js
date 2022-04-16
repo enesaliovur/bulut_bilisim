@@ -89,7 +89,6 @@ const getImages = () => {
         console.log(err);
         reject(undefined);
       } else {
-        console.log(data.Items);
         resolve(data.Items);
       }
     });

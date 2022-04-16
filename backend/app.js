@@ -97,9 +97,7 @@ app.post('/get-image', async (req, res) => {
 app.get('/get-images', async (req, res) => {
     try {
         const result = await dynamoService.getImages();
-        console.log(result);
-
-        res.send({ status: true });
+        res.send(result);
         return;
 
     } catch (e) {
