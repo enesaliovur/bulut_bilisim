@@ -108,7 +108,7 @@ app.get('/get-images', async (req, res) => {
 })
 
 
-app.delete('/delete-image', async (req, res) => {
+app.post('/delete-image', async (req, res) => {
     const id = req.body.id;
     if (id) {
         try {
