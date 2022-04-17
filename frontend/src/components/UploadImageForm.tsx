@@ -6,75 +6,133 @@ import {
   Typography
 } from '@mui/material';
 import { AxiosError } from 'axios';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikHelpers, FormikProvider, useFormik } from 'formik';
 import { useCallback, useState } from 'react';
+import { useHistory } from 'react-router';
 import { toast, ToastContainer } from 'react-toastify';
 import * as Yup from 'yup';
 import { ImageModel } from '../@types/image-model';
-import { UploadImageRequestDTO } from '../@types/upload-image-dto';
 import { API_CLIENT } from '../api/api-client';
 import { Endpoints } from '../api/endpoints';
-import { getBase64 } from '../utils';
+import { getBase64, getBase64FromUrl } from '../utils';
 import ImageCreatedDialog from './ImageCreatedDialog';
 import UploadAvatar from './UploadImage';
 
-
 type UserNewFormProps = {
   isEdit: boolean;
-  imageRequestDTO?: UploadImageRequestDTO;
+  image?: ImageModel;
 };
 
-export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewFormProps) {
+export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
 
+  const history = useHistory();
   const [file, setFile] = useState<Blob | undefined>(undefined);
   const [createdDialogInfo, setCreatedDialogInfo] = useState<{ isOpen: boolean, image?: ImageModel }>({ isOpen: false, image: undefined });
 
   const UploadImageSchema = Yup.object().shape({
     title: Yup.string().required('Title is required'),
-    imageUrl: Yup.mixed().required('Image is required')
+    imgUrl: Yup.mixed().required('Image is required')
   });
 
-  const formik = useFormik({
+  const sendCreateImageRequest = async (values: ImageModel, { resetForm, setSubmitting }: FormikHelpers<ImageModel>) => {
+    const base64Img = await getBase64(file!);
+    API_CLIENT.post(Endpoints.CREATE_IMAGE, {
+      base64Img: base64Img,
+      fileType: file!.type,
+      title: values.title,
+      password: values.password,
+      adminPassword: values.adminPassword,
+    }).then(res => {
+      resetForm();
+      setCreatedDialogInfo({ isOpen: true, image: res.data });
+    })
+      .catch((err: AxiosError) => {
+        const _error = `Hata! ${err.response?.data?.message ?? 'Beklenmeyen bir hata meydana geldi.'}`;
+        toast.error(_error, {
+          position: 'bottom-left'
+        });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  }
+
+  const sendUpdateImageRequest = async (values: ImageModel, { resetForm, setSubmitting }: FormikHelpers<ImageModel>) => {
+    const base64Img = await getBase64FromUrl(values.imgUrl!);
+    API_CLIENT.put(Endpoints.UPDATE_IMAGE, {
+      base64Img: base64Img,
+      fileType: 'image/*',
+      title: values.title,
+      password: values.password,
+      adminPassword: values.adminPassword,
+    }).then(res => {
+      resetForm();
+      setCreatedDialogInfo({ isOpen: true, image: res.data });
+    })
+      .catch((err: AxiosError) => {
+        const _error = `Hata! ${err.response?.data?.message ?? 'Beklenmeyen bir hata meydana geldi.'}`;
+        toast.error(_error, {
+          position: 'bottom-left'
+        });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  }
+
+  const formik = useFormik<ImageModel>({
     enableReinitialize: true,
     initialValues: {
-      title: imageRequestDTO?.title || '',
-      password: imageRequestDTO?.password || '',
-      adminPassword: imageRequestDTO?.adminPassword || '',
-      imageUrl: imageRequestDTO?.base64Image || '',
+      id: image?.id || '',
+      title: image?.title || '',
+      password: image?.password || '',
+      adminPassword: image?.adminPassword || '',
+      imgUrl: image?.imgUrl || '',
     },
     validationSchema: UploadImageSchema,
-    onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
-      const base64Img = await getBase64(file!);
-      API_CLIENT.post(Endpoints.CREATE_IMAGE, {
-        base64Img: base64Img,
-        title: values.title,
-        password: values.password,
-        adminPassword: values.adminPassword,
-      }).then(res => {
-        resetForm();
-        setCreatedDialogInfo({ isOpen: true, image: res.data });
-      })
-        .catch((err: AxiosError) => {
-          const _error = `Hata! ${err.response?.data?.message ?? 'Beklenmeyen bir hata meydana geldi.'}`;
-          toast.error(_error, {
-            position: 'bottom-left'
-          });
-        })
-        .finally(() => {
-          setSubmitting(false);
-        });
+    onSubmit: (values, helper) => {
+      helper.setSubmitting(true);
+      console.log('submit edildi');
+      if (isEdit) {
+        sendUpdateImageRequest(values, helper);
+      } else {
+        sendCreateImageRequest(values, helper);
+      }
     }
   });
 
-  const { errors, values, touched, handleSubmit, isSubmitting, setFieldValue, getFieldProps } =
-    formik;
+  const { errors, values, touched, handleSubmit, isSubmitting, setFieldValue, setSubmitting, getFieldProps } = formik;
+
+  const handleOnClickDelete = async () => {
+    setSubmitting(true);
+    API_CLIENT.post(Endpoints.DELETE_IMAGE, {
+      id: values.id,
+      password: values.password,
+      adminPassword: values.adminPassword,
+    }).then(_ => {
+      history.replace('/upload');
+      const _msg = `Resim başarıyla silindi!`;
+      toast.success(_msg, {
+        position: 'bottom-left'
+      });
+    })
+      .catch((err: AxiosError) => {
+        const _error = `Hata! ${err.response?.data?.message ?? 'Beklenmeyen bir hata meydana geldi.'}`;
+        toast.error(_error, {
+          position: 'bottom-left'
+        });
+      })
+      .finally(() => {
+        formik.setSubmitting(false);
+      });
+  }
 
   const handleDrop = useCallback(
     (acceptedFiles: any) => {
       const file = acceptedFiles[0];
       if (file) {
         setFile(file);
-        setFieldValue('imageUrl', {
+        setFieldValue('imgUrl', {
           ...file,
           preview: URL.createObjectURL(file)
         });
@@ -92,10 +150,10 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
               <Box sx={{ mb: 5 }}>
                 <UploadAvatar
                   accept="image/*"
-                  file={values.imageUrl}
+                  file={values.imgUrl ?? ''}
                   maxSize={3145728}
                   onDrop={handleDrop}
-                  error={Boolean(touched.imageUrl && errors.imageUrl)}
+                  error={Boolean(touched.imgUrl && errors.imgUrl)}
                   caption={
                     <Typography
                       variant="caption"
@@ -112,7 +170,7 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
                   }
                 />
                 <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
-                  {touched.imageUrl && errors.imageUrl}
+                  {touched.imgUrl && errors.imgUrl}
                 </FormHelperText>
               </Box>
             </Card>
@@ -152,7 +210,10 @@ export default function UploadImageForm({ isEdit, imageRequestDTO }: UserNewForm
 
                 </Stack>
                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                  <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                  {isEdit && <LoadingButton sx={{ mr: 1 }} color='error' variant="contained" loading={isSubmitting} onClick={() => handleOnClickDelete()}>
+                    Sil
+                  </LoadingButton>}
+                  <LoadingButton color='success' type="submit" variant="contained" loading={isSubmitting}>
                     Gönder
                   </LoadingButton>
                 </Box>

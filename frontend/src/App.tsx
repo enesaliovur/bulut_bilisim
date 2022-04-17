@@ -5,6 +5,7 @@ import {
 import {
   Route, Switch
 } from "react-router-dom";
+import ManageImagePage from './pages/ManageImagePage';
 import ShowImagePage from "./pages/ShowImagePage";
 import UploadImagePage from "./pages/UploadImagePage";
 
@@ -25,7 +26,7 @@ function App(): JSX.Element {
             <UploadImagePage />
           </Route>
           <Route path="/manage">
-            <UploadImagePage />
+            <ManageImagePage />
           </Route>
         </Switch>
       </ThemeProvider>

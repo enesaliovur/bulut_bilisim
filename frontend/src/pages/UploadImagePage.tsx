@@ -12,7 +12,6 @@ export default function UploadImagePage() {
           <Link color='white' href="/" underline="none" sx={{ flexGrow: 1 }}>
             HIZLIRESIM
           </Link>
-          <Button href='/manage' startIcon={<ManageHistoryIcon />} color="inherit">YÖNET</Button>
         </Toolbar>
       </AppBar>
       <Box margin={4}>

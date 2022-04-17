@@ -1,4 +1,5 @@
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import { AppBar, Button, Link, Toolbar } from '@mui/material';
 import { Box } from '@mui/system';
 import { AxiosError } from 'axios';
@@ -11,8 +12,8 @@ import { ImageModel } from '../@types/image-model';
 import { API_CLIENT } from '../api/api-client';
 import { Endpoints } from '../api/endpoints';
 import { ErrorCard } from '../components/ErrorCard';
-import ShowImageImageForm from '../components/ShowImageForm';
 import Spinner from '../components/Spinner/Spinner';
+import UploadImageForm from '../components/UploadImageForm';
 import useQuery from '../hooks/useQuery';
 
 export default function ShowImagePage() {
@@ -21,6 +22,7 @@ export default function ShowImagePage() {
   const history = useHistory();
 
   const imageId = query.get('id');
+  const adminPassword = query.get('adminPassword');
   const password = query.get('password');
 
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,8 @@ export default function ShowImagePage() {
       setError(undefined);
       API_CLIENT.post(Endpoints.GET_IMAGE, {
         id: imageId,
-        password
+        password: password,
+        adminPassword: adminPassword
       })
         .then(res => {
           setImage(res.data);
@@ -70,7 +73,7 @@ export default function ShowImagePage() {
       </Box>}
       {error && <ErrorCard message={error} />}
       {image && <Box margin={4}>
-        <ShowImageImageForm image={image} />
+        <UploadImageForm isEdit={true} image={image} />
       </Box>}
       <ToastContainer />
     </>

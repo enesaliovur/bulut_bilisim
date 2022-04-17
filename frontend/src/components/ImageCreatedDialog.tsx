@@ -1,7 +1,9 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField } from '@mui/material';
 import React from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 import { ImageModel } from '../@types/image-model';
+import { getManageImageLink, getShareImageLink } from '../utils';
 
 interface ImageCreatedDialogProps {
   image: ImageModel | undefined,
@@ -13,6 +15,18 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
   if (!image) {
     return (<></>);
   }
+
+  const copyLink = (url: string) => {
+    const msg = 'Başarıyla kopyalandı!';
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        toast.success(msg, {
+          delay: 100,
+          position: 'bottom-left'
+        });
+      });
+  }
+
   return (
     <Dialog open={isOpen} onClose={handleClose}>
       <DialogTitle>Başarılı</DialogTitle>
@@ -21,10 +35,12 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
           '{image.title}' resmi başarıyla upload edildi. Aşağıdaki bağlantıları kullanarak resme ulaşabilir ve düzenleyebilirsin.
         </DialogContentText>
         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-          <ContentCopyIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => copyLink(getShareImageLink(image))}>
+            <ContentCopyIcon />
+          </IconButton>
           <TextField
             id="input-with-sx"
-            value={image.imgUrl}
+            value={getShareImageLink(image)}
             label="Resim URL"
             variant="standard"
             contentEditable={false}
@@ -32,10 +48,12 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
           />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-          <ContentCopyIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => copyLink(getManageImageLink(image))}>
+            <ContentCopyIcon />
+          </IconButton>
           <TextField
             id="input-with-sx"
-            value={image.imgUrl}
+            value={getManageImageLink(image)}
             label="Düzenleme URL"
             variant="standard"
             contentEditable={false}
@@ -46,6 +64,7 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
       <DialogActions>
         <Button onClick={handleClose}>Tamam</Button>
       </DialogActions>
+      <ToastContainer />
     </Dialog>
   );
 }

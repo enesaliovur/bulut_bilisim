@@ -1,6 +1,7 @@
 export interface ImageModel {
-  id: string,
-  key:string,
+  id: string | undefined,
   title: string,
-  imgUrl: string,
+  imgUrl?: string | undefined,
+  password?: string,
+  adminPassword?: string,
 }
