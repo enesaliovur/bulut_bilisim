@@ -1,4 +1,5 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField } from '@mui/material';
 import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
@@ -27,6 +28,11 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
       });
   }
 
+  const openNewPage = (url: string) => {
+    const newWin = window.open(url, '_blank');
+    newWin?.focus();
+  }
+
   return (
     <Dialog open={isOpen} onClose={handleClose}>
       <DialogTitle>Başarılı</DialogTitle>
@@ -35,6 +41,9 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
           '{image.title}' resmi başarıyla upload edildi. Aşağıdaki bağlantıları kullanarak resme ulaşabilir ve düzenleyebilirsin.
         </DialogContentText>
         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => openNewPage(getShareImageLink(image))}>
+            <OpenInNewIcon />
+          </IconButton>
           <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => copyLink(getShareImageLink(image))}>
             <ContentCopyIcon />
           </IconButton>
@@ -48,7 +57,10 @@ export default function ImageCreatedDialog({ image, isOpen, handleClose }: Image
           />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => copyLink(getManageImageLink(image))}>
+          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => openNewPage(getManageImageLink(image))}>
+            <OpenInNewIcon />
+          </IconButton>
+          <IconButton sx={{ color: 'action.active', mr: 1, my: 0.5 }} onClick={() => openNewPage(getManageImageLink(image))}>
             <ContentCopyIcon />
           </IconButton>
           <TextField
