@@ -50,8 +50,13 @@ app.post('/create-image', async (req, res) => {
     return;
 });
 
+<<<<<<< Updated upstream
 app.put('/update-image', async (req, res) => {
     const { password, adminPassword, title, id, base64Img, fileType } = req.body;
+=======
+app.patch('/update-image', async (req, res) => {
+    const { password, adminPassword, title, id, base64Img } = req.body;
+>>>>>>> Stashed changes
 
     if (password) {
         try {
@@ -108,15 +113,20 @@ app.get('/get-images', async (req, res) => {
 })
 
 
+<<<<<<< Updated upstream
 app.post('/delete-image', async (req, res) => {
     const id = req.body.id;
+=======
+app.delete('/delete-image', async (req, res) => {
+    
+    const id  = req.body;
+>>>>>>> Stashed changes
     if (id) {
         try {
             //S3'ten sil
-            const result = await dynamoService.deleteImage({ id });
-
+            const result = await dynamoService.deleteImage(id);
             console.log(result);
-
+            await s3Service.deleteBucket(bucketName);
             res.send({ status: true });
             return;
         } catch (e) {
