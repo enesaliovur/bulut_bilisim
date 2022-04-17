@@ -27,20 +27,11 @@ const uploadFile = (base64Img, id, fileType) => {
   return uploadProcess;
 };
 
-const deleteBucket = (bucketName) => {
-  // Create params for S3.deleteBucket
-  var bucketParams = {
-    Bucket: bucketName
+const deleteBucket = (id) => {
+  const deleteParams = {
+    Key: id,
   };
-
-  // Call S3 to delete the bucket
-  s3.deleteBucket(bucketParams, function (err, data) {
-    if (err) {
-      console.log("Error", err);
-    } else {
-      console.log("Success", data);
-    }
-  });
+  return s3.deleteObject(deleteParams).promise();
 }
 
 module.exports = {

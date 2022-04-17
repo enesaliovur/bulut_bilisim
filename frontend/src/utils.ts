@@ -10,17 +10,6 @@ export const getBase64 = async (file: Blob): Promise<string | undefined> => {
   })
 }
 
-export const getBase64FromUrl = async (url: string) => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 export const getShareImageLink = (image: ImageModel) => {
   let baseUrl = new URLSearchParams(`${window.location.origin}?id=${image.id}`);
   console.log(baseUrl);
@@ -40,4 +29,31 @@ export const getManageImageLink = (image: ImageModel) => {
   }
   return decodeURIComponent(baseUrl.toString());
 
+}
+
+let getImageBlob = function (url: string): Promise<Blob> {
+  return new Promise(async resolve => {
+    let resposne = await fetch(url);
+    let blob = resposne.blob();
+    resolve(blob);
+  });
+};
+
+// convert a blob to base64
+let blobToBase64 = function (blob: Blob) {
+  return new Promise(resolve => {
+    let reader = new FileReader();
+    reader.onload = function () {
+      let dataUrl = reader.result;
+      resolve(dataUrl);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+export const getBase64FromUrl = async function (url: string) {
+  let blob = await getImageBlob(url);
+  blob = blob.slice(0, blob.size, "image/png")
+  let base64 = await blobToBase64(blob);
+  return base64;
 }

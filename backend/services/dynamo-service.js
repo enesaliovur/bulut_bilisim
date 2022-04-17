@@ -36,7 +36,7 @@ const deleteImage = (id) => {
   const params = {
     TableName: imagesTable,
     Key: {
-      id:id,
+      id: id,
     },
   };
 
@@ -66,8 +66,12 @@ const getImage = ({ password, id }) => {
         console.log(err);
         reject(undefined);
       } else {
-        console.log(data);
-        resolve(data.Items?.[0]);
+        const item = data.Items?.[0];
+        if (item) {
+          resolve(item);
+        } else {
+          reject(undefined);
+        }
       }
     });
   });
@@ -111,19 +115,20 @@ const getAllPosts = async () => {
   return readProcess;
 };
 
-const updatePost = async ({ id, password, adminPassword, title }) => {
-  const imgObject = { password, adminPassword, title ,id };
+const updatePost = async ({ id, password, adminPassword, title, imgUrl }) => {
+  const imgObject = { password, adminPassword, title, id, imgUrl };
 
   const params = {
     TableName: imagesTable,
     Key: {
       id: id
     },
-    UpdateExpression: "set password = :p, adminPassword = :a, title = :t",
-    ExpressionAttributeValues:{
+    UpdateExpression: "set password = :p, adminPassword = :a, title = :t, imgUrl =:i",
+    ExpressionAttributeValues: {
       ':p': imgObject.password,
       ':a': imgObject.adminPassword,
-      ':t': imgObject.title
+      ':t': imgObject.title,
+      ':i': imgObject.imgUrl,
     },
     ReturnValues: "UPDATED_NEW",
   };
@@ -133,7 +138,7 @@ const updatePost = async ({ id, password, adminPassword, title }) => {
         console.log(err);
         reject(undefined);
       } else {
-        resolve({ status: true });
+        resolve(imgObject);
       }
     });
   });

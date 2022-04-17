@@ -14,7 +14,7 @@ import * as Yup from 'yup';
 import { ImageModel } from '../@types/image-model';
 import { API_CLIENT } from '../api/api-client';
 import { Endpoints } from '../api/endpoints';
-import { getBase64, getBase64FromUrl } from '../utils';
+import { getBase64 } from '../utils';
 import ImageCreatedDialog from './ImageCreatedDialog';
 import UploadAvatar from './UploadImage';
 
@@ -31,7 +31,7 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
 
   const UploadImageSchema = Yup.object().shape({
     title: Yup.string().required('Title is required'),
-    imgUrl: Yup.mixed().required('Image is required')
+    base64Img: Yup.mixed().required('Image is required')
   });
 
   const sendCreateImageRequest = async (values: ImageModel, { resetForm, setSubmitting }: FormikHelpers<ImageModel>) => {
@@ -58,13 +58,15 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
   }
 
   const sendUpdateImageRequest = async (values: ImageModel, { resetForm, setSubmitting }: FormikHelpers<ImageModel>) => {
-    const base64Img = await getBase64FromUrl(values.imgUrl!);
+    const base64Img = await getBase64(file!);
     API_CLIENT.put(Endpoints.UPDATE_IMAGE, {
+      id: image!.id,
       base64Img: base64Img,
-      fileType: 'image/*',
+      fileType: file!.type,
       title: values.title,
       password: values.password,
       adminPassword: values.adminPassword,
+      imgUrl: values.imgUrl,
     }).then(res => {
       resetForm();
       setCreatedDialogInfo({ isOpen: true, image: res.data });
@@ -80,7 +82,7 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
       });
   }
 
-  const formik = useFormik<ImageModel>({
+  const formik = useFormik<ImageModel & { base64Img?: string }>({
     enableReinitialize: true,
     initialValues: {
       id: image?.id || '',
@@ -88,11 +90,11 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
       password: image?.password || '',
       adminPassword: image?.adminPassword || '',
       imgUrl: image?.imgUrl || '',
+      base64Img: image?.imgUrl || '',
     },
     validationSchema: UploadImageSchema,
     onSubmit: (values, helper) => {
       helper.setSubmitting(true);
-      console.log('submit edildi');
       if (isEdit) {
         sendUpdateImageRequest(values, helper);
       } else {
@@ -132,7 +134,7 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
       const file = acceptedFiles[0];
       if (file) {
         setFile(file);
-        setFieldValue('imgUrl', {
+        setFieldValue('base64Img', {
           ...file,
           preview: URL.createObjectURL(file)
         });
@@ -150,7 +152,7 @@ export default function UploadImageForm({ image, isEdit }: UserNewFormProps) {
               <Box sx={{ mb: 5 }}>
                 <UploadAvatar
                   accept="image/*"
-                  file={values.imgUrl ?? ''}
+                  file={values.base64Img ?? ''}
                   maxSize={3145728}
                   onDrop={handleDrop}
                   error={Boolean(touched.imgUrl && errors.imgUrl)}

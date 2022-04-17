@@ -50,27 +50,24 @@ app.post('/create-image', async (req, res) => {
     return;
 });
 
-<<<<<<< Updated upstream
 app.put('/update-image', async (req, res) => {
-    const { password, adminPassword, title, id, base64Img, fileType } = req.body;
-=======
-app.patch('/update-image', async (req, res) => {
-    const { password, adminPassword, title, id, base64Img } = req.body;
->>>>>>> Stashed changes
+    const { password, adminPassword, title, id, base64Img, fileType, imgUrl } = req.body;
 
     if (password) {
         try {
-            await dynamoService.updatePost({
+            const updatedItem = await dynamoService.updatePost({
                 id,
                 password,
                 adminPassword,
-                title
+                title,
+                imgUrl,
             });
             await s3Service.uploadFile(base64Img, id, fileType);
-            res.send({ status: true });
+            res.send(updatedItem);
             return;
 
         } catch (e) {
+            console.log(e);
             res.status(400).send({ status: false, message: 'Resim degismedi.' });
             return;
         }
@@ -113,25 +110,19 @@ app.get('/get-images', async (req, res) => {
 })
 
 
-<<<<<<< Updated upstream
 app.post('/delete-image', async (req, res) => {
     const id = req.body.id;
-=======
-app.delete('/delete-image', async (req, res) => {
-    
-    const id  = req.body;
->>>>>>> Stashed changes
     if (id) {
         try {
-            //S3'ten sil
-            const result = await dynamoService.deleteImage(id);
-            console.log(result);
-            await s3Service.deleteBucket(bucketName);
+            await dynamoService.deleteImage(id);
+            console.log("DB'den silindi.");
+            await s3Service.deleteBucket(id);
+            console.log("S3'ten silindi.");
             res.send({ status: true });
             return;
         } catch (e) {
             console.log(e);
-            res.status(400).send({ status: false, message: 'Resim silindi.' });
+            res.status(400).send({ status: false, message: 'Resim silinemedi.' });
             return;
         }
     }
