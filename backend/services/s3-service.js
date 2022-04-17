@@ -3,12 +3,13 @@ const { s3Config } = require('../aws-config');
 
 const s3 = new AWS.S3(s3Config);
 
-const uploadFile = (base64Img, id) => {
+const uploadFile = (base64Img, id, fileType) => {
   const file = Buffer.from(base64Img.replace(/^data:image\/\w+;base64,/, ""), 'base64')
 
   const uploadParams = {
     Key: id, // Name by which you want to save it
-    Body: file // Local file 
+    Body: file, // Local file 
+    ContentType: fileType,
   };
 
   const uploadProcess = new Promise((resolve, reject) => {

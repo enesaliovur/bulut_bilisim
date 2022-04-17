@@ -23,12 +23,12 @@ app.listen(port, () => {
 });
 
 app.post('/create-image', async (req, res) => {
-    const { password, adminPassword, title, base64Img } = req.body;
+    const { password, adminPassword, title, base64Img, fileType } = req.body;
 
     if (base64Img) {
         try {
             const id = uuid.v4();
-            const uploadedImgUrl = await s3Service.uploadFile(base64Img, id);
+            const uploadedImgUrl = await s3Service.uploadFile(base64Img, id, fileType);
             const result = await dynamoService.createImage({
                 id,
                 password,
@@ -51,17 +51,17 @@ app.post('/create-image', async (req, res) => {
 });
 
 app.put('/update-image', async (req, res) => {
-    const { password, adminPassword, title, id, base64Img } = req.body;
+    const { password, adminPassword, title, id, base64Img, fileType } = req.body;
 
     if (password) {
         try {
-             await dynamoService.updatePost({
+            await dynamoService.updatePost({
                 id,
                 password,
                 adminPassword,
                 title
             });
-            await s3Service.uploadFile(base64Img, id);
+            await s3Service.uploadFile(base64Img, id, fileType);
             res.send({ status: true });
             return;
 
