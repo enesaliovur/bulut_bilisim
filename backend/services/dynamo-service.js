@@ -31,12 +31,13 @@ const createImage = ({ id, title, imgUrl, password, adminPassword }) => {
 
 
 
-const deleteImage = ({ id }) => {
+const deleteImage = (id) => {
+
   const params = {
     TableName: imagesTable,
     Key: {
-      id: id
-    }
+      id:id,
+    },
   };
 
   const deleteProcess = new Promise((resolve, reject) => {
@@ -111,17 +112,20 @@ const getAllPosts = async () => {
 };
 
 const updatePost = async ({ id, password, adminPassword, title }) => {
-  const imgObject = { password, adminPassword, title };
+  const imgObject = { password, adminPassword, title ,id };
 
   const params = {
     TableName: imagesTable,
     Key: {
-      id: id,
+      id: id
     },
-    Item: {
-      id: id,
-      ...imgObject
+    UpdateExpression: "set password = :p, adminPassword = :a, title = :t",
+    ExpressionAttributeValues:{
+      ':p': imgObject.password,
+      ':a': imgObject.adminPassword,
+      ':t': imgObject.title
     },
+    ReturnValues: "UPDATED_NEW",
   };
   const updateProcess = new Promise((resolve, reject) => {
     docClient.update(params, function (err, data) {

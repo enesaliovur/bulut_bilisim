@@ -45,4 +45,5 @@ const deleteBucket = (bucketName) => {
 
 module.exports = {
   uploadFile,
+  deleteBucket
 };
