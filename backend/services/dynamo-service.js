@@ -1,7 +1,6 @@
 const AWS = require("aws-sdk");
 const { dynamoConfig } = require('../aws-config');
 const uuid = require('uuid');
-
 const docClient = new AWS.DynamoDB.DocumentClient(dynamoConfig);
 
 const imagesTable = 'images';

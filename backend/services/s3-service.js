@@ -1,6 +1,5 @@
 const AWS = require('aws-sdk');
 const { s3Config } = require('../aws-config');
-
 const s3 = new AWS.S3(s3Config);
 
 const uploadFile = (base64Img, id, fileType) => {
