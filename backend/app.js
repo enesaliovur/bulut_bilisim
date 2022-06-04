@@ -4,11 +4,13 @@ const cors = require('cors');
 const port = 3001;
 const bodyParser = require('body-parser');
 const dynamoService = require('./services/dynamo-service');
+const { decrypt } = require('./middleware');
 const s3Service = require('./services/s3-service');
 const uuid = require('uuid');
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(decrypt);
 
 app.get('/', (req, res) => {
     const response = {
