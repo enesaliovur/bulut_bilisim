@@ -10,13 +10,14 @@ function decryptText(encryptedData) {
 module.exports = {
   decrypt(req, res, next) {
     if (!req.body?.data) { next(); }
-    console.log('[BACKEND] Gelen şifreli data: ', req.body.data);
+    console.log('[BACKEND] Gelen şifreli data:\n', req.body.data);
 
     const reqBodyText = decryptText(req.body.data);
     const reqBodyObject = JSON.parse(reqBodyText);
-    
+    console.log('--------------------------------------------------------');
     req.body = reqBodyObject;
-    console.log('[BACKEND] Çözülen şifreli data: ', reqBodyObject);
+    console.log('[BACKEND] Çözülen şifreli data: ');
+    console.log(reqBodyObject);
     next();
   }
 };
